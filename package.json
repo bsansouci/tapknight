@@ -1,0 +1,24 @@
+{
+  "name": "tapknight",
+  "version": "0.0.1",
+  "description": "Some game or something?",
+  "main": "client",
+  "jengaboot": {
+    "ocamlfindDependencies": {
+      "js_of_ocaml": "*"
+    },
+    "ppxFlag": "/Users/sansouci/.opam/4.02.3/lib/js_of_ocaml/ppx_js"
+  },
+  "dependencies": {
+    "express": "^4.14.0",
+    "repixi": "git+https://github.com/bsansouci/repixi.git",
+    "socket.io": "^1.4.8"
+  },
+  "devDependencies": {
+    "jengaboot": "git://github.com/bsansouci/jengaboot.git#tmp"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bsansouci/tapknight.git"
+  }
+}
