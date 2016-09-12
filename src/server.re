@@ -92,6 +92,6 @@ let start () => {
   Node.m
     http
     "listen"
-    [|!!3000, !!(Js.wrap_meth_callback (fun () => print_endline "asdljhdashkasdhjk"))|];
+    [|!!(Js.Unsafe.get (Js.Unsafe.get (Js.Unsafe.js_expr "process") "env") "PORT"), !!(Js.wrap_meth_callback (fun () => print_endline "asdljhdashkasdhjk"))|];
   ()
 };
