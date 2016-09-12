@@ -1,4 +1,6 @@
 /* Open for operators */
+type socketT;
+
 let start () => {
   open Helpers;
   let module Node = Nodejs.Bindings_utils;
@@ -6,7 +8,7 @@ let start () => {
   let path = Node.require_module "path";
   let app = express |>> [||];
   let http = Node.m (Node.require_module "http") "Server" [|!!app|];
-  let absolutePath = (Node.m path "join" [|!!(Node.__dirname ()), putStr "..", putStr ".."|]);
+  let absolutePath = Node.m path "join" [|!!(Node.__dirname ()), putStr "..", putStr ".."|];
   ignore @@ Node.m app "use" [|Node.m express "static" [|putStr absolutePath|]|];
   ignore @@
   Node.m
@@ -25,7 +27,7 @@ let start () => {
     |];
   let socketio = Node.require_module "socket.io";
   let io = socketio |>> [|http|];
-  let otherDudes: ref (list Client.dudeT) = ref [];
+  let otherDudes: ref (list (socketT, option Client.dudeT)) = ref [];
   ignore @@
   Node.m
     io
@@ -34,7 +36,7 @@ let start () => {
       putStr "connection",
       !!
         !@(
-          fun socket => {
+          fun (socket: socketT) => {
             print_endline "A user connected!";
             ignore @@
             Node.m
@@ -45,14 +47,31 @@ let start () => {
                 !!
                   !@(
                     fun () => {
-                      print_endline "Some dude called";
-                      let dude: Client.dudeT = Js.Unsafe.get socket "dude";
-                      otherDudes :=
-                        List.filter (fun (value: Client.dudeT) => value.id != dude.id) !otherDudes
+                      print_endline "Some dude disconnected";
+                      let (_, disconnectedDude) =
+                        List.find (fun (s, value) => s == socket) !otherDudes;
+                      otherDudes := List.filter (fun (s, value) => s != socket) !otherDudes;
+                      switch disconnectedDude {
+                      | Some dude =>
+                        ignore @@
+                        List.map
+                          (
+                            fun (s, _) =>
+                              Node.m
+                                s
+                                "emit"
+                                [|
+                                  putStr "action",
+                                  !!Clientsocket.{typ: "dude-left", packet: dude}
+                                |]
+                          )
+                          !otherDudes
+                      | None => ()
+                      }
                     }
                   )
-              |]
-              ignore @@
+              |];
+            ignore @@
             Node.m
               socket
               "on"
@@ -62,30 +81,32 @@ let start () => {
                   !@(
                     fun (x: Clientsocket.actionT 'a) => {
                       switch x.typ {
-                      | "new-dude-arrived" =>
-                        print_endline "new-dude-arrived";
+                      | "dude-arrived" =>
+                        print_endline "dude-arrived";
                         let dude: Client.dudeT = x.packet;
-                        /* Shove the dude inside the socket for disconnect event. Deal with it. */
-                        Js.Unsafe.set socket "dude" dude;
-                        otherDudes := !otherDudes @ [dude]
+                        otherDudes := List.filter (fun (s, _) => s != socket) !otherDudes;
+                        otherDudes := !otherDudes @ [(socket, Some dude)]
                       | _ => ()
                       };
                       Node.m (Js.Unsafe.get socket "broadcast") "emit" [|putStr "action", !!x|]
                     }
                   )
               |];
+            ignore @@
             List.map
               (
-                fun otherDude =>
-                  Node.m
-                    socket
-                    "emit"
-                    [|
-                      putStr "action",
-                      !!Clientsocket.{typ: "new-dude-arrived", packet: otherDude}
-                    |]
+                fun (_, otherDude) =>
+                  switch otherDude {
+                  | Some dude =>
+                    Node.m
+                      socket
+                      "emit"
+                      [|putStr "action", !!Clientsocket.{typ: "dude-arrived", packet: dude}|]
+                  | None => ()
+                  }
               )
-              !otherDudes
+              !otherDudes;
+            otherDudes := !otherDudes @ [(socket, None)]
           }
         )
     |];
@@ -93,6 +114,9 @@ let start () => {
   Node.m
     http
     "listen"
-    [|!!(Js.Unsafe.get (Js.Unsafe.get (Js.Unsafe.js_expr "process") "env") "PORT"), !!(Js.wrap_meth_callback (fun () => print_endline "asdljhdashkasdhjk"))|];
+    [|
+      !!(Js.Unsafe.get (Js.Unsafe.get (Js.Unsafe.js_expr "process") "env") "PORT"),
+      !!(Js.wrap_meth_callback (fun () => print_endline "asdljhdashkasdhjk"))
+    |];
   ()
 };
