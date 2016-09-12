@@ -1,1 +1,1 @@
-web: node index.js
+web: node _build/top/app.js
