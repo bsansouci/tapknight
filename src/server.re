@@ -3,9 +3,10 @@ let start () => {
   open Helpers;
   let module Node = Nodejs.Bindings_utils;
   let express = Node.require_module "express";
+  let path = Node.require_module "path";
   let app = express |>> [||];
   let http = Node.m (Node.require_module "http") "Server" [|!!app|];
-  let absolutePath = "/Users/sansouci/Desktop/tapknight";
+  let absolutePath = (Node.m path "join" [|!!(Node.__dirname ()), putStr "..", putStr ".."|]);
   ignore @@ Node.m app "use" [|Node.m express "static" [|putStr absolutePath|]|];
   ignore @@
   Node.m
