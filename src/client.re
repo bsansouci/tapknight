@@ -56,7 +56,7 @@ let start () => {
      background#setHeight renderer#height;
      stage#addChild background; */
   let textureButton = R.Texture.fromImage uri::"sprites/bg.gif";
-  let dude = {pos: GameCoord {x: 2, y: 2}, id: "kek-lord", health: 100};
+  let dude = {pos: GameCoord {x: 2, y: 2}, id: (string_of_float (Node.m (Js.Unsafe.js_expr "Date") "now" [||])), health: 100};
   let dudeSprite = createDudeSprite dude;
   let gridCells = ref [];
   let otherDudes: ref (list dudeT) = ref [];
