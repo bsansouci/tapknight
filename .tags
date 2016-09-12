@@ -1,0 +1,21 @@
+name	/Users/sansouci/Desktop/tapknight/package.json	/^  "name": "tapknight",$/;"	function	line:2
+version	/Users/sansouci/Desktop/tapknight/package.json	/^  "version": "0.0.1",$/;"	function	line:3
+description	/Users/sansouci/Desktop/tapknight/package.json	/^  "description": "Some game or something?",$/;"	function	line:4
+main	/Users/sansouci/Desktop/tapknight/package.json	/^  "main": "_build\/top\/app.js",$/;"	function	line:5
+engines	/Users/sansouci/Desktop/tapknight/package.json	/^  "engines": {$/;"	function	line:6
+node	/Users/sansouci/Desktop/tapknight/package.json	/^    "node": "v6.1.0"$/;"	function	line:7
+scripts	/Users/sansouci/Desktop/tapknight/package.json	/^  "scripts": {$/;"	function	line:9
+start	/Users/sansouci/Desktop/tapknight/package.json	/^    "start": "node _build\/top\/app.js"$/;"	function	line:10
+jengaboot	/Users/sansouci/Desktop/tapknight/package.json	/^  "jengaboot": {$/;"	function	line:12
+ocamlfindDependencies	/Users/sansouci/Desktop/tapknight/package.json	/^    "ocamlfindDependencies": {$/;"	function	line:13
+js_of_ocaml	/Users/sansouci/Desktop/tapknight/package.json	/^      "js_of_ocaml": "*"$/;"	function	line:14
+ppxFlag	/Users/sansouci/Desktop/tapknight/package.json	/^    "ppxFlag": "\/Users\/sansouci\/.opam\/4.02.3\/lib\/js_of_ocaml\/ppx_js"$/;"	function	line:16
+dependencies	/Users/sansouci/Desktop/tapknight/package.json	/^  "dependencies": {$/;"	function	line:18
+express	/Users/sansouci/Desktop/tapknight/package.json	/^    "express": "^4.14.0",$/;"	function	line:19
+repixi	/Users/sansouci/Desktop/tapknight/package.json	/^    "repixi": "git+https:\/\/github.com\/bsansouci\/repixi.git",$/;"	function	line:20
+socket.io	/Users/sansouci/Desktop/tapknight/package.json	/^    "socket.io": "^1.4.8"$/;"	function	line:21
+devDependencies	/Users/sansouci/Desktop/tapknight/package.json	/^  "devDependencies": {$/;"	function	line:23
+jengaboot	/Users/sansouci/Desktop/tapknight/package.json	/^    "jengaboot": "git:\/\/github.com\/bsansouci\/jengaboot.git#tmp"$/;"	function	line:24
+repository	/Users/sansouci/Desktop/tapknight/package.json	/^  "repository": {$/;"	function	line:26
+type	/Users/sansouci/Desktop/tapknight/package.json	/^    "type": "git",$/;"	function	line:27
+url	/Users/sansouci/Desktop/tapknight/package.json	/^    "url": "git+https:\/\/github.com\/bsansouci\/tapknight.git"$/;"	function	line:28

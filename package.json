@@ -2,7 +2,13 @@
   "name": "tapknight",
   "version": "0.0.1",
   "description": "Some game or something?",
-  "main": "client",
+  "main": "_build/top/app.js",
+  "engines": {
+    "node": "v6.1.0"
+  },
+  "scripts": {
+    "start": "node _build/top/app.js"
+  },
   "jengaboot": {
     "ocamlfindDependencies": {
       "js_of_ocaml": "*"
