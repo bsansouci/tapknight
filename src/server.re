@@ -1,9 +1,12 @@
-/* Open for operators */
+let module Node = Nodejs.Bindings_utils;
+
+open Helpers;
+
+open Common;
+
 type socketT;
 
 let start () => {
-  open Helpers;
-  let module Node = Nodejs.Bindings_utils;
   let express = Node.require_module "express";
   let path = Node.require_module "path";
   let app = express |>> [||];
@@ -27,7 +30,25 @@ let start () => {
     |];
   let socketio = Node.require_module "socket.io";
   let io = socketio |>> [|http|];
-  let otherDudes: ref (list (socketT, option Client.dudeT)) = ref [];
+  let otherDudes: ref (list (socketT, option dudeT)) = ref [];
+  let monsterDudes: ref (list dudeT) =
+    ref
+      [
+        {
+          pos: GameCoord {x: 1, y: 1},
+          id: string_of_int (Node.m (Js.Unsafe.js_expr "Date") "now" [||]),
+          health: 100,
+          tint: Js.Unsafe.js_expr "Math.random() * 0xFFFFFF",
+          friendly: false
+        },
+        {
+          pos: GameCoord {x: 3, y: 3},
+          id: string_of_int (Node.m (Js.Unsafe.js_expr "Date") "now" [||]),
+          health: 100,
+          tint: Js.Unsafe.js_expr "Math.random() * 0xFFFFFF",
+          friendly: false
+        }
+      ];
   ignore @@
   Node.m
     io
@@ -57,13 +78,7 @@ let start () => {
                         List.map
                           (
                             fun (s, _) =>
-                              Node.m
-                                s
-                                "emit"
-                                [|
-                                  putStr "action",
-                                  !!Clientsocket.{typ: "dude-left", packet: dude}
-                                |]
+                              Node.m s "emit" [|putStr "action", !!(RemoveDude dude.id)|]
                           )
                           !otherDudes
                       | None => ()
@@ -79,11 +94,10 @@ let start () => {
                 putStr "action",
                 !!
                   !@(
-                    fun (x: Clientsocket.actionT 'a) => {
-                      switch x.typ {
-                      | "dude-arrived" =>
+                    fun (x: actionT) => {
+                      switch x {
+                      | AddDude dude =>
                         print_endline "dude-arrived";
-                        let dude: Client.dudeT = x.packet;
                         otherDudes := List.filter (fun (s, _) => s != socket) !otherDudes;
                         otherDudes := !otherDudes @ [(socket, Some dude)]
                       | _ => ()
@@ -97,15 +111,17 @@ let start () => {
               (
                 fun (_, otherDude) =>
                   switch otherDude {
-                  | Some dude =>
-                    Node.m
-                      socket
-                      "emit"
-                      [|putStr "action", !!Clientsocket.{typ: "dude-arrived", packet: dude}|]
+                  | Some dude => Node.m socket "emit" [|putStr "action", !!(AddDude dude)|]
                   | None => ()
                   }
               )
               !otherDudes;
+            ignore @@
+            List.map
+              (
+                fun monsterDude => Node.m socket "emit" [|putStr "action", !!(AddDude monsterDude)|]
+              )
+              !monsterDudes;
             otherDudes := !otherDudes @ [(socket, None)]
           }
         )
