@@ -12,7 +12,9 @@ type screenCoordT =
 type gameCoordT =
   | GameCoord posT;
 
-type dudeT = {mutable pos: gameCoordT, mutable health: int, id: string};
+type tintT = int;
+
+type dudeT = {mutable pos: gameCoordT, mutable health: int, id: string, tint: tintT};
 
 let getGameCoord (ScreenCoord cord) => GameCoord {x: cord.x / 200, y: cord.y / 200};
 
@@ -28,6 +30,8 @@ let start () => {
   let createDudeSprite dude => {
     let dudeTexture = R.Texture.fromImage uri::"sprites/knight.gif";
     let sprite = (new R.Sprite.t) dudeTexture;
+    Js.Unsafe.set sprite#raw "tint" dude.tint;
+    Node.log (Js.Unsafe.get sprite#raw "tint");
     sprite#setButtonMode true;
     let GameCoord {x, y} = dude.pos;
     sprite#setPosition (x * 200, y * 200);
@@ -59,7 +63,8 @@ let start () => {
   let yourDude = {
     pos: GameCoord {x: 2, y: 2},
     id: string_of_int (Node.m (Js.Unsafe.js_expr "Date") "now" [||]),
-    health: 100
+    health: 100,
+    tint: Js.Unsafe.js_expr "Math.random() * 0xFFFFFF"
   };
   let dudeSprite = createDudeSprite yourDude;
   let gridCells = ref [];
@@ -128,7 +133,8 @@ let start () => {
           let (otherDudeSprite, _) = List.find (fun (sprite, d) => d.id == dude.id) !otherDudes;
           Node.log otherDudeSprite;
           otherDudes := List.filter (fun (_, d) => d.id != dude.id) !otherDudes;
-          ignore @@ Js.Unsafe.meth_call everythingElseStage#raw "removeChild" [|!!(otherDudeSprite#raw)|];
+          ignore @@
+          Js.Unsafe.meth_call everythingElseStage#raw "removeChild" [|!!otherDudeSprite#raw|]
         | "dude-arrived" =>
           let dude: dudeT = packet;
           print_endline "dude-arrived";
