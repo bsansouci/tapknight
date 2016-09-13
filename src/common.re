@@ -77,7 +77,7 @@ let actionToString action =>
   | ResetState gameState => "ResetState" ^ gameStateToString gameState
   | AddDude dude => "AddDude " ^ dudeToString dude
   | RemoveDude id => "Remove " ^ id
-  | MoveDude (id, gameCoord) => "ModeDude " ^ id ^ " at " ^ gameCoordToString gameCoord
+  | MoveDude (id, gameCoord) => "MoveDude " ^ id ^ " at " ^ gameCoordToString gameCoord
   | HealthChange (id, delta) => "HealthChange " ^ id ^ " of " ^ string_of_int delta
   };
 
