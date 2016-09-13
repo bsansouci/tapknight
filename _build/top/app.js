@@ -9692,7 +9692,7 @@
             /*<<src/server.re 65 6>>*/ _eZ_=
             function(s,param)
              { /*<<src/server.re 66 20>>*/ return  /*<<src/server.re 66 20>>*/ _cW_
-                      (socket,[2,disconnectedDude[3]]) /*<<src/server.re 66 83>>*/ };
+                      (s,[2,disconnectedDude[3]]) /*<<src/server.re 66 78>>*/ };
            /*<<src/server.re 65 6>>*/ return  /*<<src/server.re 65 6>>*/ caml_call2
                   (_cY_[10],_eZ_,_eY_)}
          /*<<src/server.re 67 14>>*/ return  /*<<src/server.re 67 14>>*/ print_endline

@@ -63,7 +63,7 @@ let start () => {
       socket2Dudes := SocketMap.remove socket !socket2Dudes;
       gameState := removeDude !gameState disconnectedDude;
       SocketMap.iter
-        (fun s _ => Serversocket.emitAction socket (RemoveDude disconnectedDude.id)) !socket2Dudes
+        (fun s _ => Serversocket.emitAction s (RemoveDude disconnectedDude.id)) !socket2Dudes
     | None => print_endline "couldn't find dude :("
     }
   };
