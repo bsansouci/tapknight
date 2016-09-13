@@ -18,7 +18,6 @@ type actionT =
   | ResetState gameStateT
   | AddDude dudeT
   | RemoveDude idT
-  | ChangeHealth
   | MoveDude (idT, gameCoordT)
   | HealthChange (idT, int);
 
@@ -30,8 +29,13 @@ let getDude gameState id =>
 
 let moveDude gameState dude (GameCoord delta) => {
   let GameCoord {x: dudeX, y: dudeY} = dude.pos;
-  let newPos = GameCoord {x: dudeX + delta.x, y: dudeY + delta.y};
-  {dudes: List.map (fun d => dude == d ? {...dude, pos: newPos} : d) gameState.dudes}
+  let newPos = {x: dudeX + delta.x, y: dudeY + delta.y};
+  let collides = List.exists (fun {pos: GameCoord vec} => vec == newPos) gameState.dudes;
+  if collides {
+    gameState
+  } else {
+    {dudes: List.map (fun d => dude == d ? {...dude, pos: GameCoord newPos} : d) gameState.dudes}
+  }
 };
 
 let changeHealth gameState dude deltaHealth => {
@@ -55,6 +59,27 @@ let dudeToString {pos: GameCoord vec, health, id, friendly} =>
   ", pos: " ^
   vecToString vec ^
   ", health: " ^ string_of_int health ^ ", friendly: " ^ string_of_bool friendly ^ "}";
+
+let gameStateToString gameState =>
+  "{dudes: [" ^
+  (
+    switch gameState.dudes {
+    | [] => ""
+    | [dude, ...rest] =>
+      dudeToString dude ^ List.fold_left (fun acc dude => ", " ^ acc ^ dudeToString dude) "" rest
+    }
+  ) ^ "]}";
+
+let gameCoordToString (GameCoord vec) => "GameCoord " ^ vecToString vec;
+
+let actionToString action =>
+  switch action {
+  | ResetState gameState => "ResetState" ^ gameStateToString gameState
+  | AddDude dude => "AddDude " ^ dudeToString dude
+  | RemoveDude id => "Remove " ^ id
+  | MoveDude (id, gameCoord) => "ModeDude " ^ id ^ " at " ^ gameCoordToString gameCoord
+  | HealthChange (id, delta) => "HealthChange " ^ id ^ " of " ^ string_of_int delta
+  };
 
 let module DudeComparator = {
   type t = dudeT;

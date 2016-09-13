@@ -163,13 +163,6 @@ let start () => {
     | None => assert false
     };
   let textureButton = R.Texture.fromImage uri::"sprites/bg.gif";
-  /* let yourDude = {
-       pos: GameCoord {x: 2, y: 2},
-       id: Node.m (Js.Unsafe.js_expr "Date") "now" [||],
-       health: 100,
-       tint: Js.Unsafe.js_expr "Math.random() * 0xFFFFFF",
-       friendly: true
-     }; */
   R.Events.(
     for i in 0 to 4 {
       for j in 0 to 4 {
@@ -187,7 +180,6 @@ let start () => {
   Clientsocket.on io (fun message => actionQueue := [message, ...!actionQueue]);
   let rec animate () => {
     Dom_html._requestAnimationFrame (Js.wrap_callback animate);
-    /* This might be iterating in the wrong order... We should probably fix this. */
     gameState := List.fold_right handleAction !actionQueue !gameState;
     /* Empty action queue after handling the events */
     actionQueue := [];
@@ -205,7 +197,7 @@ let start () => {
         Js.Unsafe.set everythingElseStage#raw "y" (- dudeY + 400)
       | None => assert false
       }
-    | None => /* Your don't have your own dude yet... I guess... */ ()
+    | None => /* You don't have your own dude yet... I guess... */ ()
     };
     renderer#render stage
   };
