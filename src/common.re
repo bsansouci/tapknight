@@ -32,9 +32,9 @@ let moveDude gameState dude (GameCoord delta) => {
   let newPos = {x: dudeX + delta.x, y: dudeY + delta.y};
   let collides = List.exists (fun {pos: GameCoord vec} => vec == newPos) gameState.dudes;
   if collides {
-    gameState
+    None
   } else {
-    {dudes: List.map (fun d => dude == d ? {...dude, pos: GameCoord newPos} : d) gameState.dudes}
+    Some {dudes: List.map (fun d => dude == d ? {...dude, pos: GameCoord newPos} : d) gameState.dudes}
   }
 };
 

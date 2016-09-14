@@ -54,6 +54,37 @@ let start () => {
       }
     ]
   };
+  ignore @@
+  Js.Unsafe.fun_call
+    (Js.Unsafe.js_expr "setInterval")
+    [|
+      !!
+        !@(
+          fun () => {
+            let numberOfPeople = List.length (
+              List.filter (fun dude => dude.friendly) (!gameState).dudes
+            );
+            let numberOfMonsters = List.length (
+              List.filter (fun monster => not monster.friendly) (!gameState).dudes
+            );
+            print_endline @@
+            "Should I generate a monster? " ^
+            string_of_int numberOfPeople ^ " vs " ^ string_of_int numberOfMonsters;
+            if (numberOfMonsters < 2 * numberOfPeople) {
+              let newMonster = {
+                pos: GameCoord {x: Random.int 10, y: Random.int 10},
+                id: Js.to_string (Js.Unsafe.js_expr "Date.now().toString()"),
+                health: 100,
+                tint: Js.Unsafe.js_expr "Math.random() * 0xFFFFFF",
+                friendly: false
+              };
+              gameState := {dudes: [newMonster, ...(!gameState).dudes]};
+              ignore @@ Node.m io "emit" [|putStr "action", !!(AddDude newMonster)|]
+            }
+          }
+        ),
+      !!2000
+    |];
 
   /** Handles client disconnecting **/
   let handleDisconnect (socket: Serversocket.socketT) () => {
@@ -69,26 +100,44 @@ let start () => {
   };
 
   /** Handles actions piped from client to client **/
-  let handleAction socket (x: actionT) => {
-    print_endline @@ "ready to handle -> " ^ actionToString x;
-    switch x {
-    | AddDude dude => print_endline "received adddude action, not valid, wtf"
-    | MoveDude (id, gameCoord) =>
-      switch (getDude !gameState id) {
-      | Some dude =>
-        let nextGameState = moveDude !gameState dude gameCoord;
-        /* Couldn't perform the move if the gameStates are equal */
-        if (nextGameState == !gameState) {
-          print_endline "not performing move";
-          Serversocket.emitAction socket (ResetState !gameState)
-        } else {
-          print_endline "broadcasting move";
-          gameState := nextGameState;
-          Node.m (Js.Unsafe.get socket "broadcast") "emit" [|putStr "action", !!x|]
+  let handleAction socket (receivedAction: actionT) => {
+    print_endline @@ "ready to handle -> " ^ actionToString receivedAction;
+    let maybeNewGameState =
+      switch receivedAction {
+      | AddDude dude =>
+        print_endline "received adddude action, not valid, wtf";
+        None
+      | HealthChange (id, deltaHealth) =>
+        switch (getDude !gameState id) {
+        | Some dude =>
+          Serversocket.emitAction socket receivedAction;
+          Some (changeHealth !gameState dude deltaHealth)
+        | None =>
+          print_endline "not performing health change, dude probably dead already";
+          None
         }
-      | None => print_endline @@ "Cannot move dude " ^ id ^ " doesn't exist..."
-      }
-    | _ => print_endline @@ "handleAction unhandled " ^ actionToString x
+      | MoveDude (id, gameCoord) =>
+        switch (getDude !gameState id) {
+        | Some dude =>
+          switch (moveDude !gameState dude gameCoord) {
+          | Some nextGameState =>
+            Serversocket.broadcastAction socket receivedAction;
+            Some nextGameState
+          | None =>
+            print_endline "not performing move";
+            None
+          }
+        | None =>
+          print_endline @@ "Cannot move dude " ^ id ^ " doesn't exist...";
+          None
+        }
+      | _ =>
+        print_endline @@ "handleAction unhandled " ^ actionToString receivedAction;
+        None
+      };
+    switch maybeNewGameState {
+    | Some newGameState => gameState := newGameState
+    | None => Serversocket.emitAction socket (ResetState !gameState)
     }
   };
 

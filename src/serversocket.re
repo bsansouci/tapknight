@@ -9,3 +9,6 @@ let on (socket: socketT) actionName (cb: 'a => unit) =>
 
 let emitAction (socket: socketT) (data: Common.actionT) =>
   ignore @@ meth_call socket "emit" [|putStr "action", !!data|];
+
+let broadcastAction (socket: socketT) (data: Common.actionT) =>
+  ignore @@ meth_call (Js.Unsafe.get socket "broadcast") "emit" [|putStr "action", !!data|];
