@@ -1,6 +1,8 @@
 TapKnight
 ---
-[https://fathomless-everglades-48299.herokuapp.com](https://fathomless-everglades-48299.herokuapp.com)
+_[Try it](https://fathomless-everglades-48299.herokuapp.com)_
+
+![14303720_1238615772850309_1534124431_o](https://cloud.githubusercontent.com/assets/4534692/18505729/7d4da830-7a1d-11e6-91c2-bbed50703071.png)
 
 Just a little co-op clicker game made entirely in Reason.
 
