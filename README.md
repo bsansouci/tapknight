@@ -8,5 +8,7 @@ You should be able to install if you have [reason](http://github.com/facebook/re
 
 Tap around to move, tap on monsters to kill them.
 
+ps: it's made to be played on mobile.
+
 ## Why is this cool?
 The client and server share code which gets compiled to the same JS file which is used for both the client and the server.
