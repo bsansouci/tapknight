@@ -69,10 +69,10 @@ let start () => {
             );
             print_endline @@
             "Should I generate a monster? " ^
-            string_of_int numberOfPeople ^ " vs " ^ string_of_int numberOfMonsters;
-            if (numberOfMonsters < 2 * numberOfPeople) {
+            string_of_int (10 * numberOfPeople) ^ " vs " ^ string_of_int numberOfMonsters;
+            if (numberOfMonsters < 10 * numberOfPeople) {
               let newMonster = {
-                pos: GameCoord {x: Random.int 10, y: Random.int 10},
+                pos: GameCoord {x: Random.int 40, y: Random.int 40},
                 id: Js.to_string (Js.Unsafe.js_expr "Date.now().toString()"),
                 health: 100,
                 tint: Js.Unsafe.js_expr "Math.random() * 0xFFFFFF",
@@ -110,7 +110,7 @@ let start () => {
       | HealthChange (id, deltaHealth) =>
         switch (getDude !gameState id) {
         | Some dude =>
-          Serversocket.emitAction socket receivedAction;
+          Serversocket.broadcastAction socket receivedAction;
           Some (changeHealth !gameState dude deltaHealth)
         | None =>
           print_endline "not performing health change, dude probably dead already";

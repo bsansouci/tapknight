@@ -21,6 +21,12 @@ type actionT =
   | MoveDude (idT, gameCoordT)
   | HealthChange (idT, int);
 
+let find cb l =>
+  switch (List.filter cb l) {
+  | [] => None
+  | [x, ...rest] => Some x
+  };
+
 let getDude gameState id =>
   switch (List.filter (fun dude => dude.id == id) gameState.dudes) {
   | [dude] => Some dude
@@ -34,7 +40,9 @@ let moveDude gameState dude (GameCoord delta) => {
   if collides {
     None
   } else {
-    Some {dudes: List.map (fun d => dude == d ? {...dude, pos: GameCoord newPos} : d) gameState.dudes}
+    Some {
+      dudes: List.map (fun d => dude == d ? {...dude, pos: GameCoord newPos} : d) gameState.dudes
+    }
   }
 };
 
