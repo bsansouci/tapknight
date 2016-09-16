@@ -71,8 +71,12 @@ let start () => {
             "Should I generate a monster? " ^
             string_of_int (10 * numberOfPeople) ^ " vs " ^ string_of_int numberOfMonsters;
             if (numberOfMonsters < 10 * numberOfPeople) {
+              let generatedVec = ref {x: Random.int 40, y: Random.int 40};
+              while (List.exists (fun {pos: GameCoord vec} => vec == !generatedVec) (!gameState).dudes) {
+                generatedVec := {x: Random.int 40, y: Random.int 40};
+              };
               let newMonster = {
-                pos: GameCoord {x: Random.int 40, y: Random.int 40},
+                pos: GameCoord !generatedVec,
                 id: Js.to_string (Js.Unsafe.js_expr "Date.now().toString()"),
                 health: 100,
                 tint: Js.Unsafe.js_expr "Math.random() * 0xFFFFFF",
