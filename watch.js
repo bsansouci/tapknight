@@ -4,7 +4,7 @@ fs.watch('src', function() {
   if (!running) {
     running = true;
     var spawn = require('child_process').spawn;
-    var build = spawn('./node_modules/jengaboot/compile', {
+    var build = spawn('./run.sh', {
       stdio: ['inherit', 'inherit', 'inherit']
     });
     build.on('close', function() {

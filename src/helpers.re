@@ -1,4 +1,4 @@
-let (!@) f => Js.wrap_callback f;
+/* let (!@) f => Js.wrap_callback f;
 
 let (!!) o => Js.Unsafe.inject o;
 
@@ -8,4 +8,4 @@ let (<!>) obj field => Js.Unsafe.get obj field;
 
 let (|>>) = Js.Unsafe.fun_call;
 
-let putStr a => Js.Unsafe.inject (Js.string a);
+let putStr a => Js.Unsafe.inject (Js.string a); */

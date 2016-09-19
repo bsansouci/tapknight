@@ -1,4 +1,4 @@
-let module Bindings_utils = {
+/* let module Bindings_utils = {
   open Helpers;
   let require_module s =>
     Js.Unsafe.fun_call (Js.Unsafe.js_expr "require") [|Js.Unsafe.inject (Js.string s)|];
@@ -50,4 +50,4 @@ let module Bindings_utils = {
   let __dirname () :Js.t Js.js_string => Js.Unsafe.eval_string "__dirname";
   let (|>>) = Js.Unsafe.fun_call;
   let putStr a => Js.Unsafe.inject (Js.string a);
-};
+}; */

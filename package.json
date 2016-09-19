@@ -7,21 +7,26 @@
     "node": "v6.1.0"
   },
   "scripts": {
-    "start": "node _build/top/app.js"
+    "start": "node _build/src/server.js",
+    "build": "rebel && webpack --config webpack.dev.js _build/src/client.js"
   },
-  "jengaboot": {
-    "ocamlfindDependencies": {
-      "js_of_ocaml": "*"
-    },
-    "ppxFlag": "/Users/sansouci/.opam/4.02.3/lib/js_of_ocaml/ppx_js"
+  "rebel": {
+    "backend": "bucklescript",
+    "targets": [
+      "client",
+      "server"
+    ]
   },
   "dependencies": {
-    "express": "^4.14.0",
+    "Rexpress": "github:vramana/rexpress",
+    "reason-js": "github:chenglou/reason-js",
     "repixi": "git+https://github.com/bsansouci/repixi.git",
-    "socket.io": "^1.4.8"
+    "ResocketIO": "git+https://github.com/bsansouci/resocket.io.git"
   },
   "devDependencies": {
-    "jengaboot": "git://github.com/bsansouci/jengaboot.git#tmp"
+    "bs-platform": "^1.0.1",
+    "rebel": "github:reasonml/rebel",
+    "webpack": "^1.13.2"
   },
   "repository": {
     "type": "git",

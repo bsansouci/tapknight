@@ -14,12 +14,48 @@ type dudeT = {pos: gameCoordT, health: int, id: idT, tint: tintT, friendly: bool
 
 type gameStateT = {dudes: list dudeT};
 
-type actionT =
-  | ResetState gameStateT
-  | AddDude dudeT
-  | RemoveDude idT
-  | MoveDude (idT, gameCoordT)
-  | HealthChange (idT, int);
+/* TODO: This is garbage. ResocketIO isn't made to handle variants with data associated with it.
+  * Plz someone refactor this. We should be doing
+  * Server.on socket (fun packet =>
+  *  switch (packet) =>
+  *  | ResetState gameState => ...
+  *  ...
+  * );
+ */
+let module Action = {
+  type dataT =
+    | ResetState gameStateT
+    | AddDude dudeT
+    | RemoveDude idT
+    | MoveDude (idT, gameCoordT)
+    | HealthChange (idT, int);
+  type t 'a =
+    | Action :t 'a
+    | Join :t string
+    | Disconnect :t unit;
+  /* let stringify a => a; */
+  /* let reverse (type a) s : t a =>
+     switch s {
+     | "action" => Action
+     | "join" => Join
+     | "disconnect" => Disconnect
+     }; */
+  let stringify: type a. t a => string =
+    fun
+    | Action => "action"
+    | Join => "join"
+    | Disconnect => "disconnect";
+  let all: unit => list string = fun () => ["join", "action", "disconnect"];
+  /* type term _ =
+       | Pair (term 'a) (term 'b) :term ('a, 'b)
+       | Fst (term ('a, 'b)) :term 'a
+       | Snd (term ('a, 'b)) :term 'b;
+     let eval: type a. term a => a =
+       fun
+       | Pair x y [@implicit_arity] => (x, y)
+       | Fst x _ [@implicit_arity] => x
+       | Snd _ y [@implicit_arity] => y; */
+};
 
 let find cb l =>
   switch (List.filter cb l) {
@@ -82,20 +118,18 @@ let gameCoordToString (GameCoord vec) => "GameCoord " ^ vecToString vec;
 
 let actionToString action =>
   switch action {
-  | ResetState gameState => "ResetState" ^ gameStateToString gameState
-  | AddDude dude => "AddDude " ^ dudeToString dude
-  | RemoveDude id => "Remove " ^ id
-  | MoveDude (id, gameCoord) => "MoveDude " ^ id ^ " at " ^ gameCoordToString gameCoord
-  | HealthChange (id, delta) => "HealthChange " ^ id ^ " of " ^ string_of_int delta
+  | Action.ResetState gameState => "ResetState" ^ gameStateToString gameState
+  | Action.AddDude dude => "AddDude " ^ dudeToString dude
+  | Action.RemoveDude id => "Remove " ^ id
+  | Action.MoveDude (id, gameCoord) => "MoveDude " ^ id ^ " at " ^ gameCoordToString gameCoord
+  | Action.HealthChange (id, delta) => "HealthChange " ^ id ^ " of " ^ string_of_int delta
   };
 
 let module DudeComparator = {
   type t = dudeT;
-  let compare a b => {
-    let id1 = a.id;
-    let id2 = b.id;
-    String.compare id1 id2
-  };
+  let compare a b => String.compare a.id b.id;
 };
 
 let module DudeMap = Map.Make DudeComparator;
+
+let makeID () => string_of_int (ReasonJs.ReasonJs.Date.now ());
