@@ -1,14 +1,20 @@
 external pi_2 : float = "PIXI.PI_2" [@@bs.val];
+
 let pi = pi_2 /. 2.;
 
 external requestAnimationFrame : (float => unit) => unit = "requestAnimationFrame" [@@bs.val];
 
 let module ObservablePoint = {
-  type t = Js.t <x [@bs.set] : float, y [@bs.set] : float>;
+  type t = Js.t <
+    x [@bs.set] : float,
+    y [@bs.set] : float
+    >;
 };
 
 let module Point = {
-  type t = Js.t <x [@bs.set] : float, y [@bs.set] : float>;
+  type t = Js.t <
+    x [@bs.set] : float,
+    y [@bs.set] : float>;
   external make : float => float => t = "PIXI.Point" [@@bs.new];
   external set : t => float => float => unit = "set" [@@bs.send];
 };
@@ -81,7 +87,9 @@ let module Sprite = {
 };
 
 let module Text = {
-  type t = Js.t <x [@bs.set] : float, y [@bs.set] : float>;
+  type t = Js.t <
+  x [@bs.set] : float,
+  y [@bs.set] : float>;
   type optionsT;
   external options : fontFamily::string =>
                      fontSize::int =>
@@ -127,7 +135,9 @@ let module Renderer = {
                      resolution::int? =>
                      unit =>
                      optionsT = "" [@@bs.obj];
-  type t = Js.t <backgroundColor [@bs.set] : string, view [@bs.get] : htmlCanvasElementT>;
+  type t = Js.t <
+    backgroundColor [@bs.set] : string,
+    view [@bs.get] : htmlCanvasElementT >;
   external autoDetectRenderer : width::int => height::int => options::optionsT? => unit => t = "PIXI.autoDetectRenderer" [@@bs.val];
   external render : t => Container.t => unit = "render" [@@bs.send];
 };
