@@ -5,16 +5,19 @@ let pi = pi_2 /. 2.;
 external requestAnimationFrame : (float => unit) => unit = "requestAnimationFrame" [@@bs.val];
 
 let module ObservablePoint = {
-  type t = Js.t <
+  type t = Js.t {
+    .
     x [@bs.set] : float,
     y [@bs.set] : float
-    >;
+  };
 };
 
 let module Point = {
-  type t = Js.t <
+  type t = Js.t {
+    .
     x [@bs.set] : float,
-    y [@bs.set] : float>;
+    y [@bs.set] : float
+  };
   external make : float => float => t = "PIXI.Point" [@@bs.new];
   external set : t => float => float => unit = "set" [@@bs.send];
 };
@@ -74,7 +77,8 @@ let module Texture = {
 
 let module Sprite = {
   type t =
-    Js.t <
+    Js.t {
+      .
       anchor [@bs.set] : ObservablePoint.t,
       buttonMode [@bs.set] : bool,
       interactive [@bs.set] : bool,
@@ -82,14 +86,16 @@ let module Sprite = {
       tint [@bs.set] : int,
       x [@bs.set] : float,
       y [@bs.set] : float
-    >;
+    };
   external make : texture::Texture.t => unit => t = "PIXI.Sprite" [@@bs.new];
 };
 
 let module Text = {
-  type t = Js.t <
-  x [@bs.set] : float,
-  y [@bs.set] : float>;
+  type t = Js.t {
+    .
+    x [@bs.set] : float,
+    y [@bs.set] : float
+  };
   type optionsT;
   external options : fontFamily::string =>
                      fontSize::int =>
@@ -108,14 +114,15 @@ type kind 'container =
 
 let module Container = {
   type t =
-    Js.t <
+    Js.t {
+      .
       anchor [@bs.set] : Point.t,
       pivot [@bs.set] : Point.t,
       rotation [@bs.set] : float,
       scale [@bs.set] : Point.t,
       x [@bs.set] : float,
       y [@bs.set] : float
-    >;
+    };
   external make : unit => t = "PIXI.Container" [@@bs.new];
   external removeChild : t => (kind 'a) [@bs.ignore] => 'a => unit = "removeChild" [@@bs.send];
   external addChild : parent::t => (kind 'a) [@bs.ignore] => child::'a => unit => unit = "addChild" [@@bs.send];
@@ -135,9 +142,11 @@ let module Renderer = {
                      resolution::int? =>
                      unit =>
                      optionsT = "" [@@bs.obj];
-  type t = Js.t <
+  type t = Js.t {
+    .
     backgroundColor [@bs.set] : string,
-    view [@bs.get] : htmlCanvasElementT >;
+    view [@bs.get] : htmlCanvasElementT
+  };
   external autoDetectRenderer : width::int => height::int => options::optionsT? => unit => t = "PIXI.autoDetectRenderer" [@@bs.val];
   external render : t => Container.t => unit = "render" [@@bs.send];
 };
