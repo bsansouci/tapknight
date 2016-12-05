@@ -6,7 +6,7 @@ open Repixi;
 
 open ReasonJs;
 
-open ResocketIO.Client;
+open ReSocketIO.Client;
 
 let module Socket = Client Common.Action;
 
@@ -34,6 +34,7 @@ type animationT = {
 };
 
 let defaultDamage = (-10);
+let defaultHealing = 10;
 
 let createDudeSprite dude onOtherDudeTap => {
   let dudeTexture =
@@ -82,6 +83,7 @@ let onLoad () => {
   stage##y#=(minSizef /. 2.);
   controlsStage##scale#=(Point.make scale scale);
   let damageYouDo = ref defaultDamage;
+  let healingYouDo = ref defaultHealing;
   let damageText =
     Text.make
       ("Damage: " ^ string_of_int !damageYouDo)
@@ -167,7 +169,10 @@ let onLoad () => {
           totalTime::(150. +. !stackingAnimations *. 50.);
       animationList := [{dudeID: scalingID, elapsedTime: 0., callback}, ...!animationList]
     } else {
-      print_endline @@ "probably healing?"
+      print_endline @@ "probably healing?";
+      let deltaHealth = !healingYouDo;
+      let action = Action.HealthChange (clickedDude.id, deltaHealth);
+      Socket.emit io Action.Action action;
     };
 
   /** Helper function to diff the current gameState with a new gameState and apply the changes **/
