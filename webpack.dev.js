@@ -5,10 +5,10 @@ module.exports = {
   cache: true,
   devtool: "cheap-module-eval-source-map",
   entry: {
-    app: path.join(__dirname, "_build", "src", "client.js")
+    app: path.join(__dirname, "_build", "client", "src", "client.js")
   },
   output: {
-    path: path.join(__dirname, "_build", "src"),
+    path: path.join(__dirname, "_build", "client", "src"),
     filename: "app.js",
   },
   resolve: {

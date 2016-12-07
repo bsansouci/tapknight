@@ -8,7 +8,7 @@ open ReasonJs;
 
 open ReSocketIO.Client;
 
-let module Socket = Client Common.Action;
+module Socket = Client Common.Action;
 
 let moveSpeed = 80.;
 
@@ -34,6 +34,7 @@ type animationT = {
 };
 
 let defaultDamage = (-10);
+
 let defaultHealing = 10;
 
 let createDudeSprite dude onOtherDudeTap => {
@@ -43,6 +44,7 @@ let createDudeSprite dude onOtherDudeTap => {
     } else {
       Texture.fromImage uri::"sprites/dino.gif" ()
     };
+  ReasonJs.Console.log dudeTexture;
   let sprite = Sprite.make texture::dudeTexture ();
   sprite##tint#=dude.tint;
   sprite##buttonMode#=true;
@@ -172,7 +174,7 @@ let onLoad () => {
       print_endline @@ "probably healing?";
       let deltaHealth = !healingYouDo;
       let action = Action.HealthChange (clickedDude.id, deltaHealth);
-      Socket.emit io Action.Action action;
+      Socket.emit io Action.Action action
     };
 
   /** Helper function to diff the current gameState with a new gameState and apply the changes **/

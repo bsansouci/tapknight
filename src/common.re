@@ -22,17 +22,21 @@ type gameStateT = {dudes: list dudeT};
   *  ...
   * );
  */
-let module Action = {
+module Action = {
   type dataT =
     | ResetState gameStateT
     | AddDude dudeT
     | RemoveDude idT
     | MoveDude (idT, gameCoordT)
     | HealthChange (idT, int);
-  type t 'a =
-    | Action :t 'a
-    | Join :t string
-    | Disconnect :t unit;
+  type t =
+    | Action
+    | Join
+    | Disconnect;
+  /* type t 'a =
+     | Action :t 'a
+     | Join :t string
+     | Disconnect :t unit; */
   /* let stringify a => a; */
   /* let reverse (type a) s : t a =>
      switch s {
@@ -40,12 +44,17 @@ let module Action = {
      | "join" => Join
      | "disconnect" => Disconnect
      }; */
-  let stringify: type a. t a => string =
+  let stringify: t => string =
     fun
     | Action => "action"
     | Join => "join"
     | Disconnect => "disconnect";
-  let all: unit => list string = fun () => ["join", "action", "disconnect"];
+  /* let stringify: type a. t a => string =
+     fun
+     | Action => "action"
+     | Join => "join"
+     | Disconnect => "disconnect"; */
+  let all: list t = [Action, Join, Disconnect];
   /* type term _ =
        | Pair (term 'a) (term 'b) :term ('a, 'b)
        | Fst (term ('a, 'b)) :term 'a
@@ -125,11 +134,14 @@ let actionToString action =>
   | Action.HealthChange (id, delta) => "HealthChange " ^ id ^ " of " ^ string_of_int delta
   };
 
-let module DudeComparator = {
+module DudeComparator = {
   type t = dudeT;
   let compare a b => String.compare a.id b.id;
 };
 
-let module DudeMap = Map.Make DudeComparator;
+module DudeMap = Map.Make DudeComparator;
 
-let makeID () => string_of_int (ReasonJs.ReasonJs.Date.now ());
+let makeID () => {
+  let s4 () => Printf.sprintf "%04x" (Random.int 65536);
+  s4 () ^ s4 () ^ "-" ^ s4 () ^ "-" ^ s4 () ^ "-" ^ s4 () ^ "-" ^ s4 () ^ s4 () ^ s4 ()
+};

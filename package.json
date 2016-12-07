@@ -9,12 +9,13 @@
   "scripts": {
     "postinstall": "npm run build",
     "test": "echo 'No tests yet.  All good :D",
-    "start": "node _build/default/src/server.js",
-    "build": "rm -rf _build && eval $(dependencyEnv) && nopam && rebel",
+    "start": "node _build/server/src/server.js",
+    "build": "rm -rf _build && eval $(dependencyEnv) && nopam && rebel && webpack --config webpack.dev.js",
     "top": "eval $(dependencyEnv) && rtop",
     "env": "eval $(dependencyEnv) && env",
     "editor": "eval $(dependencyEnv) && $EDITOR .",
-    "whereisocamlmerlin": "eval $(dependencyEnv) && which ocamlmerlin-reason"
+    "whereisocamlmerlin": "eval $(dependencyEnv) && which ocamlmerlin-reason",
+    "ocamldep": "eval $(dependencyEnv) && nopam && ocamlfind ocamldep -pp refmt -ml-synonym .re -mli-synonym .rei -modules -one-line src/client.re"
   },
   "rebel": {
     "targets": [
@@ -32,15 +33,16 @@
   },
   "dependencies": {
     "rexpress": "github:vramana/rexpress",
-    "reason-js": "github:chenglou/reason-js",
+    "reason-js": "github:bsansouci/reason-js",
     "repixi": "git+https://github.com/bsansouci/repixi.git",
-    "resocketIO": "git+https://github.com/bsansouci/resocket.io.git",
+    "reSocketIO": "git+https://github.com/bsansouci/resocket.io.git",
     "@opam-alpha/merlin": "^ 2.5.0",
     "dependency-env": "https://github.com/npm-ml/dependency-env.git",
     "nopam": "https://github.com/yunxing/nopam.git",
     "realpath": "*",
-    "rebel": "https://github.com/reasonml/rebel.git",
-    "reason": "https://github.com/facebook/reason.git"
+    "rebel": "https://github.com/bsansouci/rebel-bin.git",
+    "reason": "https://github.com/facebook/reason.git",
+    "bs-platform": "https://github.com/bloomberg/bucklescript.git"
   },
   "devDependencies": {
     "webpack": "^1.13.2"

@@ -10,9 +10,9 @@ external path : pathT = "" [@@bs.module];
 
 external join : pathT => Js.undefined string => array string => string = "join" [@@bs.send] [@@bs.splice];
 
-Express.use app (Express.static path::(join path __dirname [|"..", ".."|]));
+Express.use app (Express.static path::(join path __dirname [|"..", "..", ".."|]));
 
-let module Http = {
+module Http = {
   type http;
   external make : Express.t => http = "Server" [@@bs.module "http"];
   external listen : http => int => (unit => unit) => unit = "" [@@bs.send];
@@ -20,19 +20,18 @@ let module Http = {
 
 let http = Http.make app;
 
-Express.get
-  app "/" (fun req res => Response.sendFile res "index.html" [%bs.obj {root: __dirname}]);
+Express.get app "/" (fun req res => Response.sendFile res "index.html" {"root": __dirname});
 
-open ResocketIO.Server;
+open ReSocketIO.Server;
 
-let module Server = Server Common.Action;
+module Server = Server Common.Action;
 
-let module SocketComparator = {
-  type t = ResocketIO.Server.socketT;
+module SocketComparator = {
+  type t = ReSocketIO.Server.socketT;
   let compare a b => String.compare (Server.Socket.id a) (Server.Socket.id b);
 };
 
-let module SocketMap = Map.Make SocketComparator;
+module SocketMap = Map.Make SocketComparator;
 
 let get key map =>
   try (Some (SocketMap.find key map)) {
@@ -47,30 +46,30 @@ open ReasonJs;
 
 let socket2Dudes: ref (SocketMap.t dudeT) = ref SocketMap.empty;
 
-let gameState = ref {
-  dudes: [
-    {
-      pos: GameCoord {x: 1, y: 1},
-      id: makeID (),
-      health: 100,
-      tint: int_of_float (ReasonJs.Math.random () *. 16777215.),
-      friendly: false
-    },
-    {
-      pos: GameCoord {x: 3, y: 3},
-      id: makeID () ^ "asd", /* concatenating something just in case this runs in the same ms as the one above */
-      health: 100,
-      tint: int_of_float (ReasonJs.Math.random () *. 16777215.),
-      friendly: false
-    }
-  ]
-};
+let gameState =
+  ref {
+    dudes: [
+      {
+        pos: GameCoord {x: 1, y: 1},
+        id: makeID (),
+        health: 100,
+        tint: int_of_float (ReasonJs.Math.random () *. 16777215.),
+        friendly: false
+      },
+      {
+        pos: GameCoord {x: 3, y: 3},
+        id: makeID () ^ "asd", /* concatenating something just in case this runs in the same ms as the one above */
+        health: 100,
+        tint: int_of_float (ReasonJs.Math.random () *. 16777215.),
+        friendly: false
+      }
+    ]
+  };
 
 let generateNewMonster () => {
   let numberOfPeople = List.length (List.filter (fun dude => dude.friendly) (!gameState).dudes);
-  let numberOfMonsters = List.length (
-    List.filter (fun monster => not monster.friendly) (!gameState).dudes
-  );
+  let numberOfMonsters =
+    List.length (List.filter (fun monster => not monster.friendly) (!gameState).dudes);
   print_endline @@
   "Should I generate a monster? " ^
   string_of_int (10 * numberOfPeople) ^ " vs " ^ string_of_int numberOfMonsters;
@@ -197,8 +196,17 @@ let handleAction socket receivedAction => {
 /** Handles client connecting **/
 let handleUserConnection socket => {
   print_endline "A user connected!";
-  Server.Socket.on socket Action.Join (handleJoin socket);
-  Server.Socket.on socket Action.Disconnect (handleDisconnect socket);
+  /* Server.Socket.on socket
+     (
+       fun t data =>
+         switch t {
+           | Action.Action => handleAction socket data
+           | Action.Join => handleJoin socket data
+           | Action.Disconnect => handleDisconnect socket ()
+         }
+       ); */
+  Server.Socket.on socket Action.Action (handleAction socket);
+  Server.Socket.on socket Action.Disconnect (handleJoin socket);
   Server.Socket.on socket Action.Action (handleAction socket)
 };
 
