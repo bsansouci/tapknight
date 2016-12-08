@@ -127,7 +127,7 @@ let gameCoordToString (GameCoord vec) => "GameCoord " ^ vecToString vec;
 
 let actionToString action =>
   switch action {
-  | Action.ResetState gameState => "ResetState" ^ gameStateToString gameState
+  | Action.ResetState gameState => "ResetState " ^ gameStateToString gameState
   | Action.AddDude dude => "AddDude " ^ dudeToString dude
   | Action.RemoveDude id => "Remove " ^ id
   | Action.MoveDude (id, gameCoord) => "MoveDude " ^ id ^ " at " ^ gameCoordToString gameCoord

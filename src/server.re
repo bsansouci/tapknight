@@ -205,8 +205,8 @@ let handleUserConnection socket => {
            | Action.Disconnect => handleDisconnect socket ()
          }
        ); */
-  Server.Socket.on socket Action.Action (handleAction socket);
-  Server.Socket.on socket Action.Disconnect (handleJoin socket);
+  Server.Socket.on socket Action.Join (handleJoin socket);
+  Server.Socket.on socket Action.Disconnect (handleDisconnect socket);
   Server.Socket.on socket Action.Action (handleAction socket)
 };
 
