@@ -4,25 +4,17 @@ let pi = pi_2 /. 2.;
 
 external requestAnimationFrame : (float => unit) => unit = "requestAnimationFrame" [@@bs.val];
 
-let module ObservablePoint = {
-  type t = Js.t {
-    .
-    x [@bs.set] : float,
-    y [@bs.set] : float
-  };
+module ObservablePoint = {
+  type t = Js.t {. x [@bs.set] : float, y [@bs.set] : float};
 };
 
-let module Point = {
-  type t = Js.t {
-    .
-    x [@bs.set] : float,
-    y [@bs.set] : float
-  };
+module Point = {
+  type t = Js.t {. x [@bs.set] : float, y [@bs.set] : float};
   external make : float => float => t = "PIXI.Point" [@@bs.new];
   external set : t => float => float => unit = "set" [@@bs.send];
 };
 
-let module Events = {
+module Events = {
   type mouseEventT =
     | MouseDown
     | MouseUp
@@ -70,12 +62,12 @@ let module Events = {
        [|inject (Js.string (stringForEventType (Keyboard evt))), inject (Js.wrap_callback cb)|]; */
 };
 
-let module Texture = {
+module Texture = {
   type t;
   external fromImage : uri::string => unit => t = "PIXI.Texture.fromImage" [@@bs.val];
 };
 
-let module Sprite = {
+module Sprite = {
   type t =
     Js.t {
       .
@@ -90,12 +82,8 @@ let module Sprite = {
   external make : texture::Texture.t => unit => t = "PIXI.Sprite" [@@bs.new];
 };
 
-let module Text = {
-  type t = Js.t {
-    .
-    x [@bs.set] : float,
-    y [@bs.set] : float
-  };
+module Text = {
+  type t = Js.t {. x [@bs.set] : float, y [@bs.set] : float};
   type optionsT;
   external options : fontFamily::string =>
                      fontSize::int =>
@@ -112,7 +100,7 @@ type kind 'container =
   | Container :kind 'container
   | Text :kind Text.t;
 
-let module Container = {
+module Container = {
   type t =
     Js.t {
       .
@@ -132,7 +120,7 @@ let module Container = {
  * which gets setup in a dummy file that does module aliases:
  * let module Renderer = RendererMaker(Container);
  * */
-let module Renderer = {
+module Renderer = {
   type htmlCanvasElementT;
   type optionsT;
   external options : view::htmlCanvasElementT? =>
@@ -142,11 +130,7 @@ let module Renderer = {
                      resolution::int? =>
                      unit =>
                      optionsT = "" [@@bs.obj];
-  type t = Js.t {
-    .
-    backgroundColor [@bs.set] : string,
-    view [@bs.get] : htmlCanvasElementT
-  };
+  type t = Js.t {. backgroundColor [@bs.set] : string, view [@bs.get] : htmlCanvasElementT};
   external autoDetectRenderer : width::int => height::int => options::optionsT? => unit => t = "PIXI.autoDetectRenderer" [@@bs.val];
   external render : t => Container.t => unit = "render" [@@bs.send];
 };
