@@ -12,7 +12,13 @@ type idT = string;
 
 type dudeT = {pos: gameCoordT, health: int, id: idT, tint: tintT, friendly: bool};
 
-type gameStateT = {dudes: list dudeT};
+type cellT =
+  | Empty
+  | Filled;
+
+type gridT = array (array cellT);
+
+type gameStateT = {dudes: list dudeT, grid: gridT};
 
 /* TODO: This is garbage. ResocketIO isn't made to handle variants with data associated with it.
   * Plz someone refactor this. We should be doing
@@ -32,6 +38,7 @@ module Action = {
   type t =
     | Action
     | Join
+    | Connect
     | Disconnect;
   /* type t 'a =
      | Action :t 'a
@@ -48,6 +55,7 @@ module Action = {
     fun
     | Action => "action"
     | Join => "join"
+    | Connect => "connect"
     | Disconnect => "disconnect";
   /* let stringify: type a. t a => string =
      fun
@@ -86,12 +94,14 @@ let moveDude gameState dude (GameCoord delta) => {
     None
   } else {
     Some {
+      ...gameState,
       dudes: List.map (fun d => dude == d ? {...dude, pos: GameCoord newPos} : d) gameState.dudes
     }
   }
 };
 
 let changeHealth gameState dude deltaHealth => {
+  ...gameState,
   dudes:
     gameState.dudes |>
     List.map (fun d => d.id == dude.id ? {...d, health: d.health + deltaHealth} : d) |>
@@ -99,10 +109,11 @@ let changeHealth gameState dude deltaHealth => {
 };
 
 let removeDude gameState dude => {
+  ...gameState,
   dudes: gameState.dudes |> List.filter (fun d => d.id != dude.id)
 };
 
-let addDude gameState dude => {dudes: [dude, ...gameState.dudes]};
+let addDude gameState dude => {...gameState, dudes: [dude, ...gameState.dudes]};
 
 let vecToString {x, y} => "{x: " ^ string_of_int x ^ ", y: " ^ string_of_int y ^ "}";
 
@@ -145,3 +156,8 @@ let makeID () => {
   let s4 () => Printf.sprintf "%04x" (Random.int 65536);
   s4 () ^ s4 () ^ "-" ^ s4 () ^ "-" ^ s4 () ^ "-" ^ s4 () ^ "-" ^ s4 () ^ s4 () ^ s4 ()
 };
+
+external nicePrintHelper : string => 'a => unit = "console.log" [@@bs.val];
+
+let nicePrint: type a. string => a => unit =
+  fun (funcName: string) (message: a) => nicePrintHelper (funcName ^ ":") message;

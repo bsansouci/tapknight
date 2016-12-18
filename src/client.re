@@ -37,19 +37,21 @@ let defaultDamage = (-10);
 
 let defaultHealing = 10;
 
+
 let createDudeSprite dude onOtherDudeTap => {
+  let print = nicePrint "createDudeSprite";
   let dudeTexture =
     if dude.friendly {
       Texture.fromImage uri::"sprites/knight.gif" ()
     } else {
       Texture.fromImage uri::"sprites/dino.gif" ()
     };
-  ReasonJs.Console.log dudeTexture;
+  nicePrint "createDudeSprite" dudeTexture;
   let sprite = Sprite.make texture::dudeTexture ();
   sprite##tint#=dude.tint;
   sprite##buttonMode#=true;
   let GameCoord {x, y} = dude.pos;
-  print_endline @@ "x:" ^ string_of_int x ^ " y: " ^ string_of_int y;
+  print @@ "x:" ^ string_of_int x ^ " y: " ^ string_of_int y;
   sprite##x#=(float_of_int (x * 200 + 100));
   sprite##y#=(float_of_int (y * 200 + 100));
   sprite##interactive#=true;
@@ -62,6 +64,7 @@ let createDudeSprite dude onOtherDudeTap => {
 };
 
 let onLoad () => {
+  let print = nicePrint "onLoad";
   let io = Socket.create ();
   let yourID = string_of_int (ReasonJs.Date.now ());
   let width = ReasonJs.Window.innerWidth ();
@@ -98,7 +101,7 @@ let onLoad () => {
 
   /** Create game datastructures **/
   let dude2Sprites: ref (DudeMap.t Sprite.t) = ref DudeMap.empty;
-  let gameState = ref {dudes: []};
+  let gameState = ref {dudes: [], grid: [||]};
   let actionQueue: ref (list Action.dataT) = ref [];
   let animationList: ref (list animationT) = ref [];
   let everythingElseStage = Container.make ();
@@ -106,7 +109,6 @@ let onLoad () => {
   let animateScreenWhenAttack totalTime::totalTime gameState elapsedTime =>
     if (elapsedTime < totalTime) {
       let angle = sin (elapsedTime /. totalTime *. pi *. 10.) /. 40.;
-      ReasonJs.Console.log angle;
       stage##rotation#=angle;
       NotDone gameState
     } else {
@@ -137,7 +139,8 @@ let onLoad () => {
     };
 
   /** callback triggered when tapping on ally or ennemy **/
-  let onOtherDudeTap clickedDude _ =>
+  let onOtherDudeTap clickedDude _ => {
+    let print = nicePrint "onOtherDudeTap";
     if (not clickedDude.friendly) {
       let stackingAnimations = ref 0.;
       switch (get clickedDude !dude2AnimationCount) {
@@ -171,15 +174,17 @@ let onLoad () => {
           totalTime::(150. +. !stackingAnimations *. 50.);
       animationList := [{dudeID: scalingID, elapsedTime: 0., callback}, ...!animationList]
     } else {
-      print_endline @@ "probably healing?";
+      print @@ "probably healing?";
       let deltaHealth = !healingYouDo;
       let action = Action.HealthChange (clickedDude.id, deltaHealth);
       Socket.emit io Action.Action action
-    };
+    }
+  };
 
   /** Helper function to diff the current gameState with a new gameState and apply the changes **/
   let resetSprites newGameState dude2Sprites => {
-    print_endline "reset state";
+    let print = nicePrint "resetSprites";
+    print "reset state";
     /* Reimplementation of MeltGoldIntoMold */
     let dudesToRemove = ref [];
 
@@ -194,7 +199,7 @@ let onLoad () => {
         }
       )
       !dude2Sprites;
-    print_endline @@ "dudes to remove " ^ string_of_int (List.length !dudesToRemove);
+    print @@ "dudes to remove " ^ string_of_int (List.length !dudesToRemove);
     List.iter
       (
         fun (dudeToRemove, spriteToRemove) => {
@@ -213,13 +218,13 @@ let onLoad () => {
           /* print_endline @@ "Dude: " ^ dudeToString currentDude; */
           switch maybeSprite {
           | Some sprite =>
-            print_endline "you found yourself!";
+            print "you found yourself!";
             /* Don't do anything */ ()
           | None =>
             /* SIDE EFFECT */
-            print_endline @@ "Adding dude: " ^ currentDude.id;
+            print @@ "Adding dude: " ^ currentDude.id;
             let dudeSprite = createDudeSprite currentDude onOtherDudeTap;
-            ReasonJs.Console.log dudeSprite;
+            nicePrint "resetSprites" dudeSprite;
             dude2Sprites := DudeMap.add currentDude dudeSprite !dude2Sprites;
             Container.addChild parent::everythingElseStage Sprite child::dudeSprite ()
           }
@@ -261,64 +266,10 @@ let onLoad () => {
     }
   };
 
-  /** callback that gets called when a local or remote action is triggered **/
-  let handleAction (action: Action.dataT) (gameState: gameStateT) =>
-    switch action {
-    | Action.ResetState newGameState =>
-      print_endline "received reset gamestate";
-      resetSprites newGameState dude2Sprites;
-      newGameState
-    | Action.RemoveDude id =>
-      print_endline "dude-left";
-      switch (getDude gameState id) {
-      | Some dude =>
-        switch (get dude !dude2Sprites) {
-        | Some sprite =>
-          /* SIDE EFFECT */
-          Container.removeChild everythingElseStage Sprite sprite;
-          removeDude gameState dude
-        | None => gameState
-        }
-      | None => assert false
-      }
-    | Action.AddDude dude =>
-      print_endline @@ "dude-arrived " ^ dudeToString dude;
-      let dudeSprite = createDudeSprite dude onOtherDudeTap;
-      dude2Sprites := DudeMap.add dude dudeSprite !dude2Sprites;
-      Container.addChild parent::everythingElseStage Sprite child::dudeSprite ();
-      addDude gameState dude
-    | Action.MoveDude (id, delta) =>
-      switch (getDude gameState id) {
-      | Some dude =>
-        switch (moveDude gameState dude delta) {
-        | Some nextGameState =>
-          /* SIDE EFFECT */
-          animationList := List.filter (fun {dudeID} => dudeID != dude.id) !animationList;
-          let callback = animateMoveDude dude::dude delta::delta totalTime::moveSpeed;
-          animationList := [{dudeID: dude.id, elapsedTime: 0., callback}, ...!animationList];
-          nextGameState
-        | None => gameState
-        }
-      | None =>
-        print_endline @@ "Hey eh... This dude doesn't exist '" ^ id ^ "'";
-        gameState
-      }
-    | Action.HealthChange (id, deltaHealth) =>
-      switch (getDude gameState id) {
-      | Some dude =>
-        let newGameState = changeHealth gameState dude deltaHealth;
-        print_endline "health change so next resetSprite makes sense";
-        resetSprites newGameState dude2Sprites;
-        newGameState
-      | None =>
-        print_endline @@ "Hey eh... This dude doesn't exist '" ^ id ^ "'";
-        gameState
-      }
-    };
-
   /** callback called when a tap occured not on a special tile **/
   let onButtonDown gameState this => {
-    ReasonJs.Console.log this;
+    let print = nicePrint "onButtonDown";
+    nicePrint "onButtonDown" this;
     switch (getDude !gameState yourID) {
     | Some yourDude =>
       let maybeAnimation = find (fun {dudeID} => dudeID == yourDude.id) !animationList;
@@ -341,23 +292,99 @@ let onLoad () => {
         actionQueue := [action, ...!actionQueue]
       }
     | None =>
-      print_endline "Your dude got killed";
+      print "Your dude got killed";
       assert false
     }
   };
-  let textureButton = Texture.fromImage uri::"sprites/bg.gif" ();
-  for i in 0 to 40 {
-    for j in 0 to 40 {
-      let i = float_of_int i;
-      let j = float_of_int j;
-      let tile = Sprite.make texture::textureButton ();
-      tile##buttonMode#=true;
-      tile##x#=(i *. 200.);
-      tile##y#=(j *. 200.);
-      tile##interactive#=true;
-      Events.on tile Events.MouseDown (onButtonDown gameState);
-      Events.on tile Events.TouchStart (onButtonDown gameState);
-      Container.addChild parent::everythingElseStage Sprite child::tile ()
+
+  /** Resets the whole grid. **/
+  let resetGrid {grid} => {
+    let print = nicePrint "resetGrid";
+    /* TODO: do some cleanup! */
+    gameState := {...!gameState, grid};
+    let emptyTexture = Texture.fromImage uri::"sprites/bg-empty.gif" ();
+    let filledTexture = Texture.fromImage uri::"sprites/bg-filled.gif" ();
+    let height = Array.length grid - 1;
+    let width = Array.length grid.(0) - 1;
+    for i in 0 to width {
+      for j in 0 to height {
+        switch grid.(j).(i) {
+        | Empty =>
+          let tile = Sprite.make texture::emptyTexture ();
+          tile##buttonMode#=true;
+          tile##x#=(float_of_int i *. 200.);
+          tile##y#=(float_of_int j *. 200.);
+          tile##interactive#=true;
+          Container.addChild parent::everythingElseStage Sprite child::tile ()
+        | Filled =>
+          let tile = Sprite.make texture::filledTexture ();
+          tile##buttonMode#=true;
+          tile##x#=(float_of_int i *. 200.);
+          tile##y#=(float_of_int j *. 200.);
+          tile##interactive#=true;
+          Events.on tile Events.MouseDown (onButtonDown gameState);
+          Events.on tile Events.TouchStart (onButtonDown gameState);
+          Container.addChild parent::everythingElseStage Sprite child::tile ()
+        }
+      }
+    }
+  };
+
+  /** callback that gets called when a local or remote action is triggered **/
+  let handleAction (action: Action.dataT) (gameState: gameStateT) => {
+    let print = nicePrint "handleAction";
+    switch action {
+    | Action.ResetState newGameState =>
+      print "received reset gamestate";
+      resetGrid newGameState;
+      resetSprites newGameState dude2Sprites;
+      newGameState
+    | Action.RemoveDude id =>
+      print "dude-left";
+      switch (getDude gameState id) {
+      | Some dude =>
+        switch (get dude !dude2Sprites) {
+        | Some sprite =>
+          /* SIDE EFFECT */
+          Container.removeChild everythingElseStage Sprite sprite;
+          removeDude gameState dude
+        | None => gameState
+        }
+      | None => assert false
+      }
+    | Action.AddDude dude =>
+      print @@ "dude-arrived " ^ dudeToString dude;
+      let dudeSprite = createDudeSprite dude onOtherDudeTap;
+      dude2Sprites := DudeMap.add dude dudeSprite !dude2Sprites;
+      Container.addChild parent::everythingElseStage Sprite child::dudeSprite ();
+      addDude gameState dude
+    | Action.MoveDude (id, delta) =>
+      switch (getDude gameState id) {
+      | Some dude =>
+        switch (moveDude gameState dude delta) {
+        | Some nextGameState =>
+          /* SIDE EFFECT */
+          animationList := List.filter (fun {dudeID} => dudeID != dude.id) !animationList;
+          let callback = animateMoveDude dude::dude delta::delta totalTime::moveSpeed;
+          animationList := [{dudeID: dude.id, elapsedTime: 0., callback}, ...!animationList];
+          nextGameState
+        | None => gameState
+        }
+      | None =>
+        print @@ "Hey eh... This dude doesn't exist '" ^ id ^ "'";
+        gameState
+      }
+    | Action.HealthChange (id, deltaHealth) =>
+      switch (getDude gameState id) {
+      | Some dude =>
+        let newGameState = changeHealth gameState dude deltaHealth;
+        print "health change so next resetSprite makes sense";
+        resetSprites newGameState dude2Sprites;
+        newGameState
+      | None =>
+        print @@ "Hey eh... This dude doesn't exist '" ^ id ^ "'";
+        gameState
+      }
     }
   };
   Container.addChild parent::stage Container child::everythingElseStage ();

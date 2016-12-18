@@ -2,7 +2,7 @@
   "name": "tapknight",
   "version": "0.0.1",
   "description": "Some game or something?",
-  "main": "_build/default/src/server.js",
+  "main": "_build/client/src/server.js",
   "engines": {
     "node": "v6.1.0"
   },
@@ -10,11 +10,11 @@
     "postinstall": "npm run build",
     "test": "echo 'No tests yet.  All good :D",
     "start": "node _build/server/src/server.js",
-    "build": "rm -rf _build && eval $(dependencyEnv) && nopam && rebel && webpack --config webpack.dev.js",
+    "build": "eval $(dependencyEnv) && nopam && rebel && webpack --config webpack.dev.js",
     "top": "eval $(dependencyEnv) && rtop",
     "env": "eval $(dependencyEnv) && env",
     "editor": "eval $(dependencyEnv) && $EDITOR .",
-    "whereisocamlmerlin": "eval $(dependencyEnv) && which ocamlmerlin-reason",
+    "whereisocamlmerlin": "eval $(dependencyEnv) && which ocamlmerlin",
     "ocamldep": "eval $(dependencyEnv) && nopam && ocamlfind ocamldep -pp refmt -ml-synonym .re -mli-synonym .rei -modules -one-line src/client.re"
   },
   "rebel": {
@@ -42,9 +42,7 @@
     "realpath": "*",
     "rebel": "https://github.com/bsansouci/rebel-bin.git",
     "reason": "https://github.com/facebook/reason.git",
-    "bs-platform": "https://github.com/bloomberg/bucklescript.git"
-  },
-  "devDependencies": {
+    "bs-platform": "https://github.com/bloomberg/bucklescript.git",
     "webpack": "^1.13.2"
   },
   "repository": {

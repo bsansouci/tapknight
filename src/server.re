@@ -46,6 +46,19 @@ open ReasonJs;
 
 let socket2Dudes: ref (SocketMap.t dudeT) = ref SocketMap.empty;
 
+let grid = [|
+  [|Filled, Filled, Filled, Filled, Filled, Filled, Filled, Filled, Filled, Filled|],
+  [|Filled, Filled, Filled, Filled, Filled, Filled, Filled, Filled, Filled, Filled|],
+  [|Filled, Empty, Filled, Empty, Filled, Filled, Filled, Filled, Filled, Filled|],
+  [|Filled, Empty, Filled, Filled, Empty, Filled, Filled, Filled, Filled, Filled|],
+  [|Filled, Empty, Filled, Filled, Filled, Filled, Filled, Filled, Filled, Filled|],
+  [|Filled, Filled, Filled, Filled, Filled, Filled, Filled, Filled, Filled, Filled|],
+  [|Filled, Filled, Filled, Filled, Filled, Filled, Filled, Filled, Filled, Filled|],
+  [|Filled, Filled, Filled, Filled, Filled, Filled, Filled, Filled, Filled, Filled|],
+  [|Filled, Filled, Filled, Filled, Filled, Filled, Filled, Filled, Filled, Filled|],
+  [|Filled, Filled, Filled, Filled, Filled, Filled, Filled, Filled, Filled, Filled|]
+|];
+
 let gameState =
   ref {
     dudes: [
@@ -63,39 +76,39 @@ let gameState =
         tint: int_of_float (ReasonJs.Math.random () *. 16777215.),
         friendly: false
       }
-    ]
+    ],
+    grid
   };
 
-let generateNewMonster () => {
-  let numberOfPeople = List.length (List.filter (fun dude => dude.friendly) (!gameState).dudes);
-  let numberOfMonsters =
-    List.length (List.filter (fun monster => not monster.friendly) (!gameState).dudes);
-  print_endline @@
-  "Should I generate a monster? " ^
-  string_of_int (10 * numberOfPeople) ^ " vs " ^ string_of_int numberOfMonsters;
-  if (numberOfMonsters < 10 * numberOfPeople) {
-    let generatedVec = ref {x: Random.int 40, y: Random.int 40};
-    while (List.exists (fun {pos: GameCoord vec} => vec == !generatedVec) (!gameState).dudes) {
-      generatedVec := {x: Random.int 40, y: Random.int 40}
-    };
-    let newMonster = {
-      pos: GameCoord !generatedVec,
-      id: makeID (),
-      health: 100,
-      tint: int_of_float (ReasonJs.Math.random () *. 16777215.),
-      friendly: false
-    };
-    gameState := {dudes: [newMonster, ...(!gameState).dudes]};
-    Server.emit io Action.Action (Action.AddDude newMonster)
-  }
-};
-
-ReasonJs.setInterval generateNewMonster 2000;
-
+/* let generateNewMonster () => {
+     let numberOfPeople = List.length (List.filter (fun dude => dude.friendly) (!gameState).dudes);
+     let numberOfMonsters =
+       List.length (List.filter (fun monster => not monster.friendly) (!gameState).dudes);
+     print_endline @@
+     "Should I generate a monster? " ^
+     string_of_int (10 * numberOfPeople) ^ " vs " ^ string_of_int numberOfMonsters;
+     if (numberOfMonsters < 10 * numberOfPeople) {
+       let generatedVec = ref {x: Random.int 40, y: Random.int 40};
+       while (List.exists (fun {pos: GameCoord vec} => vec == !generatedVec) (!gameState).dudes) {
+         generatedVec := {x: Random.int 40, y: Random.int 40}
+       };
+       let newMonster = {
+         pos: GameCoord !generatedVec,
+         id: makeID (),
+         health: 100,
+         tint: int_of_float (ReasonJs.Math.random () *. 16777215.),
+         friendly: false
+       };
+       gameState := {...!gameState, dudes: [newMonster, ...(!gameState).dudes]};
+       Server.emit io Action.Action (Action.AddDude newMonster)
+     }
+   }; */
+/* ReasonJs.setInterval generateNewMonster 2000; */
 
 /** Handles client disconnecting **/
 let handleDisconnect socket () => {
-  print_endline "Some dude disconnected";
+  let print = nicePrint "handleDisconnect";
+  print "Some dude disconnected";
   switch (get socket !socket2Dudes) {
   | Some disconnectedDude =>
     socket2Dudes := SocketMap.remove socket !socket2Dudes;
@@ -103,14 +116,15 @@ let handleDisconnect socket () => {
     SocketMap.iter
       (fun s _ => Server.Socket.emit s Action.Action (Action.RemoveDude disconnectedDude.id))
       !socket2Dudes
-  | None => print_endline "couldn't find dude :("
+  | None => print "couldn't find dude :("
   }
 };
 
 
 /** HandleJoin is the main entry point. Waits to receive an id and then removes itself. **/
 let handleJoin socket id => {
-  print_endline @@ "handleJoin " ^ id;
+  let print = nicePrint "handleJoin";
+  print id;
   switch (getDude !gameState id) {
   | Some dude =>
     socket2Dudes := SocketMap.remove socket !socket2Dudes;
@@ -135,11 +149,12 @@ let handleJoin socket id => {
     tint: int_of_float (ReasonJs.Math.random () *. 16777215.),
     friendly: true
   };
-  print_endline @@ "created dude -> " ^ dudeToString yourDude;
+  print @@ "created dude -> " ^ dudeToString yourDude;
   SocketMap.iter
     (fun s _ => Server.Socket.emit s Action.Action (Action.AddDude yourDude)) !socket2Dudes;
 
-  /** Add the new dude to the gameState and the SocketMap and then send the connection the current
+  /**
+   * Add the new dude to the gameState and the SocketMap and then send the connection the current
    * gameState.
    **/
   gameState := addDude !gameState yourDude;
@@ -150,11 +165,12 @@ let handleJoin socket id => {
 
 /** Handles actions piped from client to client **/
 let handleAction socket receivedAction => {
-  print_endline @@ "ready to handle -> " ^ actionToString receivedAction;
+  let print = nicePrint "handleAction";
+  print @@ "ready to handle -> " ^ actionToString receivedAction;
   let maybeNewGameState =
     switch receivedAction {
     | Action.AddDude dude =>
-      print_endline "received adddude action, not valid, wtf";
+      print "received adddude action, not valid, wtf";
       None
     | Action.HealthChange (id, deltaHealth) =>
       switch (getDude !gameState id) {
@@ -162,12 +178,12 @@ let handleAction socket receivedAction => {
         Server.Socket.broadcast socket Action.Action receivedAction;
         Some (changeHealth !gameState dude deltaHealth)
       | None =>
-        print_endline "not performing health change, dude probably dead already";
+        print "not performing health change, dude probably dead already";
         None
       }
     | Action.MoveDude (id, gameCoord) =>
-      ReasonJs.Console.log "got movedude";
-      ReasonJs.Console.log id;
+      print "got movedude";
+      nicePrint "handleAction" id;
       switch (getDude !gameState id) {
       | Some dude =>
         switch (moveDude !gameState dude gameCoord) {
@@ -175,27 +191,30 @@ let handleAction socket receivedAction => {
           Server.Socket.broadcast socket Action.Action receivedAction;
           Some nextGameState
         | None =>
-          print_endline "not performing move";
+          print "not performing move";
           None
         }
       | None =>
-        print_endline @@ "Cannot move dude " ^ id ^ " doesn't exist...";
+        print @@ "Cannot move dude " ^ id ^ " doesn't exist...";
         None
       }
     | _ =>
-      print_endline @@ "handleAction unhandled " ^ actionToString receivedAction;
+      print @@ "handleAction unhandled " ^ actionToString receivedAction;
       None
     };
   switch maybeNewGameState {
   | Some newGameState => gameState := newGameState
-  | None => Server.Socket.emit socket Action.Action (Action.ResetState !gameState)
+  | None =>
+    print "Somthing happened and we're resetting the state";
+    Server.Socket.emit socket Action.Action (Action.ResetState !gameState)
   }
 };
 
 
 /** Handles client connecting **/
 let handleUserConnection socket => {
-  print_endline "A user connected!";
+  let print = nicePrint "handleUserConnection";
+  print "A user connected!";
   /* Server.Socket.on socket
      (
        fun t data =>
