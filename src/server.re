@@ -46,18 +46,7 @@ open ReasonJs;
 
 let socket2Dudes: ref (SocketMap.t dudeT) = ref SocketMap.empty;
 
-let grid = [|
-  [|Filled, Filled, Filled, Filled, Filled, Filled, Filled, Filled, Filled, Filled|],
-  [|Filled, Filled, Filled, Filled, Filled, Filled, Filled, Filled, Filled, Filled|],
-  [|Filled, Empty, Filled, Empty, Filled, Filled, Filled, Filled, Filled, Filled|],
-  [|Filled, Empty, Filled, Filled, Empty, Filled, Filled, Filled, Filled, Filled|],
-  [|Filled, Empty, Filled, Filled, Filled, Filled, Filled, Filled, Filled, Filled|],
-  [|Filled, Filled, Filled, Filled, Filled, Filled, Filled, Filled, Filled, Filled|],
-  [|Filled, Filled, Filled, Filled, Filled, Filled, Filled, Filled, Filled, Filled|],
-  [|Filled, Filled, Filled, Filled, Filled, Filled, Filled, Filled, Filled, Filled|],
-  [|Filled, Filled, Filled, Filled, Filled, Filled, Filled, Filled, Filled, Filled|],
-  [|Filled, Filled, Filled, Filled, Filled, Filled, Filled, Filled, Filled, Filled|]
-|];
+let grid = DungeonGenerator.generate width::10 height::10;
 
 let gameState =
   ref {
