@@ -39,14 +39,14 @@ let defaultHealing = 10;
 
 
 let createDudeSprite dude onOtherDudeTap => {
-  let print = nicePrint "createDudeSprite";
+  let print message => nicePrint "createDudeSprite" message;
   let dudeTexture =
     if dude.friendly {
       Texture.fromImage uri::"sprites/knight.gif" ()
     } else {
       Texture.fromImage uri::"sprites/dino.gif" ()
     };
-  nicePrint "createDudeSprite" dudeTexture;
+  print dudeTexture;
   let sprite = Sprite.make texture::dudeTexture ();
   sprite##tint#=dude.tint;
   sprite##buttonMode#=true;
@@ -64,7 +64,19 @@ let createDudeSprite dude onOtherDudeTap => {
 };
 
 let onLoad () => {
-  let print = nicePrint "onLoad";
+  /**
+   * We have to write print like this
+   *
+   *   let print message => nicePrint "onLoad" message;
+   *
+   * instead of
+   *
+   *   let print = nicePrint "onLoad";
+   *
+   * because of something called "value restriction".
+   * Here's a great explanation of what's going on http://mlton.org/ValueRestriction
+   */
+  let print message => nicePrint "onLoad" message;
   let io = Socket.create ();
   let yourID = string_of_int (ReasonJs.Date.now ());
   let width = ReasonJs.Window.innerWidth ();
@@ -81,7 +93,7 @@ let onLoad () => {
   /** Create different top level containers **/
   let stage = Container.make ();
   let controlsStage = Container.make ();
-  let scale = float_of_int minSize /. (200. *. 5.);
+  let scale = float_of_int minSize /. (200. *. 5. *. 20.);
   stage##scale#=(Point.make scale scale);
   stage##pivot#=(Point.make (minSizef /. 2.) (minSizef /. 2.));
   stage##x#=(minSizef /. 2.);
@@ -140,7 +152,7 @@ let onLoad () => {
 
   /** callback triggered when tapping on ally or ennemy **/
   let onOtherDudeTap clickedDude _ => {
-    let print = nicePrint "onOtherDudeTap";
+    let print message => nicePrint "onOtherDudeTap";
     if (not clickedDude.friendly) {
       let stackingAnimations = ref 0.;
       switch (get clickedDude !dude2AnimationCount) {
@@ -183,7 +195,7 @@ let onLoad () => {
 
   /** Helper function to diff the current gameState with a new gameState and apply the changes **/
   let resetSprites newGameState dude2Sprites => {
-    let print = nicePrint "resetSprites";
+    let print message => nicePrint "resetSprites" message;
     print "reset state";
     /* Reimplementation of MeltGoldIntoMold */
     let dudesToRemove = ref [];
@@ -224,7 +236,7 @@ let onLoad () => {
             /* SIDE EFFECT */
             print @@ "Adding dude: " ^ currentDude.id;
             let dudeSprite = createDudeSprite currentDude onOtherDudeTap;
-            nicePrint "resetSprites" dudeSprite;
+            print dudeSprite;
             dude2Sprites := DudeMap.add currentDude dudeSprite !dude2Sprites;
             Container.addChild parent::everythingElseStage Sprite child::dudeSprite ()
           }
@@ -268,8 +280,8 @@ let onLoad () => {
 
   /** callback called when a tap occured not on a special tile **/
   let onButtonDown gameState this => {
-    let print = nicePrint "onButtonDown";
-    nicePrint "onButtonDown" this;
+    let print message => nicePrint "onButtonDown" message;
+    print this;
     switch (getDude !gameState yourID) {
     | Some yourDude =>
       let maybeAnimation = find (fun {dudeID} => dudeID == yourDude.id) !animationList;
@@ -299,7 +311,7 @@ let onLoad () => {
 
   /** Resets the whole grid. **/
   let resetGrid {grid} => {
-    let print = nicePrint "resetGrid";
+    let print message => nicePrint "resetGrid" message;
     /* TODO: do some cleanup! */
     gameState := {...!gameState, grid};
     let emptyTexture = Texture.fromImage uri::"sprites/bg-empty.gif" ();
@@ -332,7 +344,7 @@ let onLoad () => {
 
   /** callback that gets called when a local or remote action is triggered **/
   let handleAction (action: Action.dataT) (gameState: gameStateT) => {
-    let print = nicePrint "handleAction";
+    let print message => nicePrint "handleAction" message;
     switch action {
     | Action.ResetState newGameState =>
       print "received reset gamestate";

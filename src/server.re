@@ -46,7 +46,7 @@ open ReasonJs;
 
 let socket2Dudes: ref (SocketMap.t dudeT) = ref SocketMap.empty;
 
-let grid = DungeonGenerator.generate width::10 height::10;
+let grid = DungeonGenerator.generate width::100 height::100;
 
 let gameState =
   ref {
